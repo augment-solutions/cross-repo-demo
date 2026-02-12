@@ -11,13 +11,11 @@ An example e-commerce application built with a microservices architecture, demon
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Docker and Docker Compose
 - Git
+- Node.js and npm (for the Context Connectors)
+- Optional (if you want to build and run the services):Docker and Docker Compose
 
-### Running the Platform
-
-TODO: improve explanation below
-All repos should be in the same parent directory. The `ui-components` are included via `--build-context` in the `docker build` command in `docker-compose-up.sh`.
+### Running the Demo
 
 1. **Clone all repositories** (if not already in workspace):
 ```sh
