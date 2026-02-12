@@ -39,7 +39,7 @@ ls
 ```
 
 2. Set credentials
-- Create a GitHub personal access token. See GitHub docs: Managing personal access token)[https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic])
+- Create a GitHub personal access token. See GitHub docs: [Managing personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic)
 - Get your Augment API token and URL: `auggie token print`
 - Set environment variables:
 ```sh
