@@ -1,18 +1,127 @@
 # Cross-Repo Context Demo: E-Commerce Microservices Platform
 
-An example e-commerce application built with a microservices architecture, demonstrating **Augment's Context Engine** and its ability to index and search across multiple repositories.
-
-## 🎯 Purpose
-
 This demo showcases how Augment's Context Engine can seamlessly work across a multi-repository codebase, enabling developers to:
 - **Search across repositories** - Find code, patterns, and implementations across all services
 - **Understand cross-service dependencies** - Navigate between services written in different languages
 - **Maintain consistency** - Discover similar patterns and implementations across the platform
 - **Accelerate development** - Quickly locate relevant code regardless of which repo it lives in
 
+An example e-commerce application built with a microservices architecture, demonstrating **Augment's Context Engine** and its ability to index and search across multiple repositories.
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Docker and Docker Compose
+- Git
+
+### Running the Platform
+
+TODO: improve explanation below
+All repos should be in the same parent directory. The `ui-components` are included via `--build-context` in the `docker build` command in `docker-compose-up.sh`.
+
+1. **Clone all repositories** (if not already in workspace):
+```sh
+git clone https://github.com/augment-solutions/cross-repo-demo-core.git
+git clone https://github.com/augment-solutions/cross-repo-demo-product-service.git
+git clone https://github.com/augment-solutions/cross-repo-demo-catalog-service.git
+git clone https://github.com/augment-solutions/cross-repo-demo-inventory-service.git
+git clone https://github.com/augment-solutions/cross-repo-demo-ui-components.git
+git clone https://github.com/augment-solutions/cross-repo-demo-storefront-web.git
+git clone https://github.com/augment-solutions/cross-repo-demo-admin-dashboard.git
+# All repos should be in the same parent directory
+ls
+# cross-repo-demo/
+# cross-repo-demo-core/
+# cross-repo-demo-product-service/
+# cross-repo-demo-catalog-service/
+# cross-repo-demo-inventory-service/
+# cross-repo-demo-ui-components/
+# cross-repo-demo-storefront-web/
+# cross-repo-demo-admin-dashboard/
+```
+
+2. Set credentials
+- Create a GitHub personal access token. See GitHub docs: Managing personal access token)[https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-personal-access-token-classic])
+- Get your Augment API token and URL: `auggie token print`
+- Set environment variables:
+```sh
+export AUGMENT_API_TOKEN='your-token'
+export AUGMENT_API_URL='https://your-tenant.api.augmentcode.com/'
+export GITHUB_TOKEN='your-github-token'
+```
+
+3. **Index repositories**:
+```sh
+cd cross-repo-demo
+./index.sh
+```
+
+4. Add MCP server to IDE or CLI:
+Import the JSON below to your IDE, or import to Auggie via `auggie mcp add-json cross-repo '<JSON>'` (make sure to include the single quotes).
+```json
+{
+    "type": "stdio",
+    "command": "npx",
+    "args": [
+        "ctxc",
+        "mcp",
+        "stdio",
+        "-i",
+        "cross-repo-demo-core",
+        "-i",
+        "cross-repo-demo-product-service",
+        "-i",
+        "cross-repo-demo-catalog-service",
+        "-i",
+        "cross-repo-demo-inventory-service",
+        "-i",
+        "cross-repo-demo-ui-components",
+        "-i",
+        "cross-repo-demo-storefront-web",
+        "-i",
+        "cross-repo-demo-admin-dashboard"
+    ],
+    "env": {
+        "AUGMENT_API_TOKEN": "your-auggie-token",
+        "AUGMENT_API_URL": "https://your-tenant.api.augmentcode.com/",
+        "GITHUB_TOKEN": "your-github-token"
+    }
+}
+```
+
+5. Do cross-repo queries! Open one of the individual repos and ask questions like:
+- `product-service`: What services could be impacted by changes to the product API?
+- `ui-components`: Which frontends are using the ProductCard component?
+- `storefront-web`: How is data flowing from the backend services all the way to the ProductCard component?
+
+Optional steps below (not needed for IDE/CLI demo)
+6. **Start all services**:
+```sh
+cd cross-repo-demo
+./docker-compose-up.sh
+```
+
+This script starts services in the correct order:
+- Core infrastructure (PostgreSQL, Redis, API Gateway)
+- Product Service
+- Inventory Service
+- Catalog Service
+- Storefront Web
+- Admin Dashboard
+
+7. **Access the application**:
+- **Storefront**: http://localhost:3000
+- **Admin Dashboard**: http://localhost:3001
+
+8. **Stop all services**:
+```sh
+cd cross-repo-demo
+./docker-compose-down.sh
+```
+
 ## 🏗️ Architecture
 
-The platform consists of **5 separate repositories**, each representing a different microservice or component:
+The platform consists of **6 separate repositories**, each representing a different microservice or component:
 
 ### 1. **cross-repo-demo-core** (TypeScript/Node.js)
 Core infrastructure and shared services
@@ -50,6 +159,13 @@ Customer-facing e-commerce storefront
 - **Features**: Product browsing, cart, checkout, user accounts, wishlist
 - **Port**: 3000
 
+### 6. **cross-repo-demo-admin-dashboard** (TypeScript/Next.js)
+Admin panel for managing products and categories
+- **Framework**: Next.js 14 with App Router
+- **UI**: React with Tailwind CSS and shared UI components
+- **Features**: Product CRUD, category CRUD, admin interfaces
+- **Port**: 3001
+
 ## 🛠️ Technology Stack
 
 | Service | Language | Framework | Database | Key Libraries |
@@ -59,58 +175,13 @@ Customer-facing e-commerce storefront
 | Catalog Service | Go | Gin | PostgreSQL | GORM, go-redis |
 | Inventory Service | Rust | Actix-web | PostgreSQL | Diesel, redis-rs |
 | Storefront Web | TypeScript | Next.js 14 | - | React, Tailwind CSS |
+| Admin Dashboard | TypeScript | Next.js 14 | - | React, Tailwind CSS, React Query |
 
 **Shared Infrastructure:**
 - PostgreSQL 16 (multi-database setup)
 - Redis 7 (caching + event streaming)
 - OpenTelemetry (distributed tracing)
 - Docker & Docker Compose
-
-## 🚀 Quick Start
-
-### Prerequisites
-- Docker and Docker Compose
-- Git
-
-### Running the Platform
-
-1. **Clone all repositories** (if not already in workspace):
-```bash
-# All repos should be in the same parent directory
-ls
-# cross-repo-demo/
-# cross-repo-demo-core/
-# cross-repo-demo-product-service/
-# cross-repo-demo-catalog-service/
-# cross-repo-demo-inventory-service/
-# cross-repo-demo-storefront-web/
-```
-
-2. **Start all services**:
-```bash
-cd cross-repo-demo
-./docker-compose-up.sh
-```
-
-This script starts services in the correct order:
-- Core infrastructure (PostgreSQL, Redis, API Gateway)
-- Product Service
-- Inventory Service
-- Catalog Service
-- Storefront Web
-
-3. **Access the application**:
-- **Storefront**: http://localhost:3000
-- **API Gateway**: http://localhost:8064
-- **Catalog Service**: http://localhost:8080
-- **Product Service**: http://localhost:8010
-- **Inventory Service**: http://localhost:8004
-
-4. **Stop all services**:
-```bash
-cd cross-repo-demo
-./docker-compose-down.sh
-```
 
 ## 📡 API Endpoints
 
