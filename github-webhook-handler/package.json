@@ -1,0 +1,14 @@
+{
+  "name": "github-webhook-handler-context-connectors",
+  "version": "1.0.0",
+  "description": "GitHub webhook handler for Updating Augment Indexes using Context Connectors",
+  "type": "module",
+  "scripts": {
+    "start": "node github-webhook-handler.js"
+  },
+  "dependencies": {
+    "@augmentcode/context-connectors": "^0.1.4",
+    "@octokit/rest": "^22.0.1",
+    "dotenv": "^17.3.1"
+  }
+}
