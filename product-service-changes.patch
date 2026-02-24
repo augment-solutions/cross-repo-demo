@@ -1,0 +1,122 @@
+diff --git a/services/product-service/src/services/ProductService.ts b/services/product-service/src/services/ProductService.ts
+index 1d1763d..577b91d 100644
+--- a/services/product-service/src/services/ProductService.ts
++++ b/services/product-service/src/services/ProductService.ts
+@@ -47,10 +47,12 @@ export class ProductService {
+         slug: slugify(request.name, { lower: true, strict: true }),
+         description: request.description,
+         shortDescription: request.shortDescription,
+-        price: request.price,
+-        compareAtPrice: request.compareAtPrice,
+-        costPrice: request.costPrice,
+-        currency: request.currency || 'USD',
++        pricing: {
++          amount: request.pricing.amount,
++          compareAtPrice: request.pricing.compareAtPrice,
++          costPrice: request.pricing.costPrice,
++          currency: request.pricing.currency || 'USD',
++        },
+         categoryId: request.categoryId,
+         brandId: request.brandId,
+         status: request.status || ProductStatus.DRAFT,
+@@ -157,9 +159,20 @@ export class ProductService {
+           }))
+         : existing.images;
+ 
++      // Handle pricing update with proper currency defaulting
++      const updatedPricing = request.pricing
++        ? {
++            amount: request.pricing.amount,
++            compareAtPrice: request.pricing.compareAtPrice,
++            costPrice: request.pricing.costPrice,
++            currency: request.pricing.currency || existing.pricing.currency,
++          }
++        : existing.pricing;
++
+       const updated: Product = {
+         ...existing,
+         ...request,
++        pricing: updatedPricing,
+         images: updatedImages,
+         slug: request.name ? slugify(request.name, { lower: true, strict: true }) : existing.slug,
+         updatedAt: new Date(),
+@@ -236,12 +249,12 @@ export class ProductService {
+         results = results.filter(p => p.status === params.status);
+       }
+ 
+-      // Filter by price range
++      // Filter by price range (using nested pricing.amount)
+       if (params.minPrice !== undefined) {
+-        results = results.filter(p => p.price >= params.minPrice!);
++        results = results.filter(p => p.pricing.amount >= params.minPrice!);
+       }
+       if (params.maxPrice !== undefined) {
+-        results = results.filter(p => p.price <= params.maxPrice!);
++        results = results.filter(p => p.pricing.amount <= params.maxPrice!);
+       }
+ 
+       // Filter by tags
+diff --git a/services/product-service/src/types/product.ts b/services/product-service/src/types/product.ts
+index 01bae89..6b512a8 100644
+--- a/services/product-service/src/types/product.ts
++++ b/services/product-service/src/types/product.ts
+@@ -1,3 +1,25 @@
++/**
++ * Pricing represents nested pricing information
++ * BREAKING CHANGE: This replaces flat price, compareAtPrice, costPrice fields
++ * Dependent services expecting flat fields will break
++ */
++export interface Pricing {
++  amount: number;
++  compareAtPrice?: number;
++  costPrice?: number;
++  currency: string;
++}
++
++/**
++ * PricingRequest represents pricing in create/update requests
++ */
++export interface PricingRequest {
++  amount: number;
++  compareAtPrice?: number;
++  costPrice?: number;
++  currency?: string;
++}
++
+ export interface Product {
+   id: string;
+   sku: string;
+@@ -5,10 +27,7 @@ export interface Product {
+   slug: string;
+   description: string;
+   shortDescription?: string;
+-  price: number;
+-  compareAtPrice?: number;
+-  costPrice?: number;
+-  currency: string;
++  pricing: Pricing; // BREAKING: was flat price, compareAtPrice, costPrice, currency
+   categoryId?: string;
+   brandId?: string;
+   status: ProductStatus;
+@@ -60,8 +79,7 @@ export interface ProductVariant {
+   id: string;
+   sku: string;
+   name: string;
+-  price: number;
+-  compareAtPrice?: number;
++  pricing: Pricing; // BREAKING: was flat price, compareAtPrice
+   stockQuantity: number;
+   attributes: ProductAttribute[];
+   imageId?: string;
+@@ -79,10 +97,7 @@ export interface CreateProductRequest {
+   name: string;
+   description: string;
+   shortDescription?: string;
+-  price: number;
+-  compareAtPrice?: number;
+-  costPrice?: number;
+-  currency?: string;
++  pricing: PricingRequest; // BREAKING: was flat price, compareAtPrice, costPrice, currency
+   categoryId?: string;
+   brandId?: string;
+   status?: ProductStatus;
